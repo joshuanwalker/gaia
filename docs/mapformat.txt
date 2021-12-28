@@ -96,7 +96,7 @@ tttttt - structure type and size
 This is either a city or terriformer depending on it's type. The format
 varies.
 If it's nothing it's 000000
-If it's a city, it's format is  0aass
+If it's a city, it's format is  0aaass
 If it's a terrformer it's format is 1ppttt
 
 	City format - 0aaass
