@@ -126,18 +126,18 @@ If it's a terrformer it's format is 1ppttt
 
 		Terriformer power - pp
 		=================
-		2 bit number showing power output
+		2 bit number showing power output (0-3)
 		
 			Terriformer type - ttt
 			================
 			000 - Gernic Terriformer (unised)
 			001   Biome factory
-			10 - Oxygenator
+			010 - Oxygenator
 			011 - N2 Generator
 			100 - Vaporator
 			101 - CO2 generator
 			110 - Monolith
-			1111 - Ice Metor (daisy in daisyworld sim)
+			111 - Ice Metor (daisy in daisyworld sim)
 
 //////////////////////////////////////////////////////////////////////////////
 0x4080 - Hi-resolution (128x64) bitmap of organisms (1 byte per cell)
@@ -179,7 +179,7 @@ cccc - Animal Class
 
 eeee - Evolution Step
 ---------------------
-0-15 - what step the animal is currently to reach sapincy (step 15)
+0-15 - what step the animal is currently to reach sapincy (step 15 is sapiant)
 
 
 //////////////////////////////////////////////////////////////////
@@ -268,7 +268,7 @@ Format:
 
 bb - animation frame number
 ---------------------------
-frame of event animation between 1 and 4
+frame of event animation between 0 and 3
 
 tttt = event type
 -----------------
