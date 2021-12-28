@@ -1,4 +1,4 @@
-SimEarth File Format
+SimEarth .PLA File Format
 
 
 The Map layout is static with no checksums
