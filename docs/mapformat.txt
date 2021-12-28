@@ -1,0 +1,349 @@
+SimEarth File Format
+
+
+The Map layout is static with no checksums
+0x0000 - Header
+0x0080 - Hi-resolution (128x64) bitmap of biome, hightmap, water, and civilization data (2 bytes per cell)
+0x4080 - Hi-resolution (128x64) bitmap of organisms (1 byte per cell)
+0x6080 - Low-resolution (64x32) bitmap of ocean temperature (1 byte per cell)
+0x6880 - Low-resolution (64x32) bitmap of ocean flow (1 byte per cell)
+0x7080 - Low-resolution (64x32) bitmap of magma flow (1 byte per cell)
+0x7880 - Low-resolution (64x32) bitmap of events (1 byte per cell)
+0x8080 - Low-resolution (64x32) bitmap of ocean temperature (1 byte per cell)
+0x8880 - Low-resolution (64x32) bitmap of rainfall (1 byte per cell)
+0x9080 - Low-resolution (64x32) bitmap of air flow (1 byte per cell)
+0x9880 - Time/Logs
+0xA01A - END OF FILE
+
+
+Notes about Map resolution:
+The basic layer is a rectangular array of 128 horizontal 64 tiles by vertical tiles. Many Of the
+game’s layers are half this size: 64 horizontal by 32 vertical. These smaller layers have "fat"
+cells. One fat cell will correspond to four "tiny" cells from the basic layers. For example, an
+animal in cell (10,10) would look into the fat weather cell (5,5) when looking for air temperature.
+A tiny cell with coordinates (X,Y) would correspond 10 a fat cell at (X/2, Y/2). The fat cell with
+coordinates (H,V) would correspond to the four tiny cells at (H*2, V*2),(H*2+1, V*2),(H*2, V*2+1),
+and (H×2+1, V×2+1).
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+0x0000 Header
+The header has Size if 0x80 bytes (128 Bytes) and appears to contain the
+gross overview of the planet status
+
+offset:
+0x00 00 0D		-Unknown
+0x02			-Planet Name (22 Bytes)
+Rest is unknown
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+0x0080 - Hi-resolution (128x64) bitmap of biome, hightmap, water, and
+civilization data (2 bytes per cell)
+To plot:
+Counts  down Y axis from 0 to 63, and when Y > 63, adds one to X axis; Y = 0
+
+//Psudocode...
+for (mapX = 0; mapX < 128; mapX++)
+{
+	for (mapY = 0; mapY < 64; mapY++)
+	{
+	readTwoBytes()
+	}
+}
+
+
+Bit format (Big edian):
+bbbhhhhhwitttttt
+
+bbb = Biome Type
+----------------
+000 - Nothing
+001 - arctic
+010 - borial
+011 - dessert
+100 - grassland
+101 - forest
+110 - jungle
+111 - swamp
+
+hhhhh - Hightmap
+----------------
+First 3 layers are techtonic plates
+Incements of 500 meters from 0-31
+
+w = Has water
+-------------
+0 = land
+1 = water
+
+i = city buffer
+-----------------
+Cites have a radius that prevents other Cities building, This radius grows
+smaller as the tech increases. Tech level one Cities cannot be closer than 
+four spaces apart. Tech level seven cities can build directly adjacent to
+each other. This restriction represents the need for infrastructure in the
+surrounding region. It emulates the historical pattern that puts more large
+cities closer to each other over time.
+
+0 = No buffer
+1 = Buffer 
+
+tttttt - structure type and size
+--------------------------------
+This is either a city or terriformer depending on it's type. The format
+varies.
+If it's nothing it's 000000
+If it's a city, it's format is  0aass
+If it's a terrformer it's format is 1ppttt
+
+	City format - 0aaass
+	+++++++++++
+	0  - Always zero
+		
+		City Age - aaa
+		+++++++++++++
+		000 - No City - No tech
+		010 - Stone Age
+		011 - Iron Age
+		100 - Industrial Age
+		101 - Atomic Age
+		110 - Information Age
+		111 - Nanotech Age
+		
+			City Size - ss
+			++++++++++++++
+			00 - Travalling
+			01 - Small
+			10 - medium
+			11 - large
+			
+	Terriformer format - 1ppttt
+	==================
+	1 - Always 1
+
+		Terriformer power - pp
+		=================
+		2 bit number showing power output
+		
+			Terriformer type - ttt
+			================
+			000 - Gernic Terriformer (unised)
+			001   Biome factory
+			10 - Oxygenator
+			011 - N2 Generator
+			100 - Vaporator
+			101 - CO2 generator
+			110 - Monolith
+			1111 - Ice Metor (daisy in daisyworld sim)
+
+//////////////////////////////////////////////////////////////////////////////
+0x4080 - Hi-resolution (128x64) bitmap of organisms (1 byte per cell)
+
+To plot:
+Counts  down Y axis from 0 to 63, and when Y > 63, adds one to X axis; Y = 0
+
+//Psudocode...
+for (mapX = 0; mapX < 128; mapX++)
+{
+	for (mapY = 0; mapY < 64; mapY++)
+	{
+	readOneByte()
+	}
+}
+
+
+Bit format :
+cccceeee
+
+cccc - Animal Class
+-------------------
+0000 - prokaryotic
+0001 - eukaryotic
+0010 - radiates
+0011 - arthopods
+0100 - mollusks
+0101 - fish
+0110 - cetacean
+0111 - trichordate
+1000 - insects
+1001 - amphibians
+1010 - reptiles
+1011 - dinosaurs
+1100 - birds
+1101 - mammals
+1110 - carniferns
+1111 - robots
+
+eeee - Evolution Step
+---------------------
+0-15 - what step the animal is currently to reach sapincy (step 15)
+
+
+//////////////////////////////////////////////////////////////////
+// The rest are 64x32 Low-resolution bitmpas at 1 bits per cell //
+//////////////////////////////////////////////////////////////////
+To plot:
+Counts  down Y axis from 0 to 31, and when Y > 31, adds one to X axis; Y = 0
+
+//Psudocode...
+for (mapX = 0; mapX < 64; mapX++)
+{
+	for (mapY = 0; mapY < 32; mapY++)
+	{
+	readOneByte()
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+0x6080 - Low-resolution (64x32) bitmap of ocean temperature (1 byte per cell)
+
+Format:
+tttttttt
+--------
+Ocean temperature ranges 
+-17c to 47c in .25c degree incrments
+
+The color bar uses the following (It does not match the temputure perfectly.)
+0x00 - 0x3F - color 1	(<0)
+0x40 - 0x7F - color 2 	(0-10)
+0x80 - 0x9F - color 3	(10-20)
+0xA0 - 0xAF - color 4	(20-30)
+0xB0 - 0xCF - color 5	(30-40)
+0xD0 - 0xEF - color 6	(40-50)
+0xF0 - 0xFF - color 7	(>50)
+ 
+
+//////////////////////////////////////////////////////////////////////////////
+0x6880 - Low-resolution (64x32) bitmap of ocean flow (1 byte per cell)
+
+Format:
+00000ddd
+--------
+Ocean Flow direction - (Note the arrows do not point correctly in the mini map on the original game) 
+000 - No Movement
+001 - North
+010 - Northeast
+011 - East
+100 - Souteast
+101 - South
+110 - Southwest
+111 - West 
+111 - Northwest
+
+
+//////////////////////////////////////////////////////////////////////////////
+0x7080 - Low-resolution (64x32) bitmap of magma flow (1 byte per cell)
+
+Format: 
+ssss0ddd
+s = speed 
+d = direction
+
+ssss = speed 
+---------
+Speed is between 0-15 cm per year
+
+
+d = direction
+-------------
+000 - No Movement
+001 - North
+010 - Northeast
+011 - East
+100 - Souteast
+101 - South
+110 - Southwest
+111 - West 
+111 - Northwest
+
+//////////////////////////////////////////////////////////////////////////////
+0x7880 - Low-resolution (64x32) bitmap of events (1 byte per cell)
+
+Format:
+00ttttbb
+
+bb - animation frame number
+---------------------------
+frame of event animation between 1 and 4
+
+tttt = event type
+-----------------
+00000000 = No event
+
+0000 - Hurricane
+0001 - Tsunami
+0010 - Meteor
+0011 - volcano
+0100 - Atomic bomb
+0101 - forest fire
+0110 - earthquake
+0111 - battle
+1000 - Radioactive
+1001 - Oil Spill
+1010 - City Lift
+1011 - plauge
+1100 - Pollution
+
+
+//////////////////////////////////////////////////////////////////////////////
+0x8080 - Low-resolution (64x32) bitmap of ocean temperature (1 byte per cell)
+
+Format:
+tttttttt
+--------
+Air temperature ranges 
+-17c to 47c in .25c degree incrments (like the water)
+
+The color bar uses the following (It does not match the temputure perfectly.)
+0x00 - 0x3F - color 1	(<0)
+0x40 - 0x7F - color 2 	(0-10)
+0x80 - 0x9F - color 3	(10-20)
+0xA0 - 0xAF - color 4	(20-30)
+0xB0 - 0xCF - color 5	(30-40)
+0xD0 - 0xEF - color 6	(40-50)
+0xF0 - 0xFF - color 7	(>50)
+
+
+//////////////////////////////////////////////////////////////////////////////
+ 0x8880 - Low-resolution (64x32) bitmap of rainfall (1 byte per cell)
+ 
+Format:
+aaaaaaaa
+--------
+0 cm/year to 25.5 cm/year (0-255 with decimal moved one point over)  
+
+//////////////////////////////////////////////////////////////////////////////
+0x9080 - Low-resolution (64x32) bitmap of air flow (1 byte per cell)
+
+Format:
+00000ddd
+--------
+Air flow direction - (Note the arrows do not point correctly in the mini map on the original game) 
+000 - No Movement
+001 - North
+010 - Northeast
+011 - East
+100 - Souteast
+101 - South
+110 - Southwest
+111 - West 
+111 - Northwest
+
+//////////////////////////////////////////////////////////////////////////////
+0x9880 - Time/Logs
+Unknown
+
+//////////////////////////////////////////////////////////////////////////////
+0xA01A - END OF FILE
+
+
+
+
+
+
+
+

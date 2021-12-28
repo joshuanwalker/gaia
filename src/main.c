@@ -8,16 +8,22 @@ void  loadMap(const char* filename);
 
 ALLEGRO_DISPLAY* display;
 
-unsigned char heightmap[128][64];
-unsigned char biomemap[128][64];
-unsigned char watermap[128][64];
-unsigned char influencemap[128][64];
-unsigned char city[128][64];
-unsigned char cityEra[128][64];
-unsigned char cityPopulation[128][64];
-unsigned char terraformer[128][64];
-unsigned char terraformerPower[128][64];
-unsigned char terraformerType[128][64];
+typedef struct mapData
+{
+	unsigned char height;
+	unsigned char biome;
+	unsigned char water;
+	unsigned char influence;
+	unsigned char city;
+	unsigned char cityEra;
+	unsigned char cityPopulation;
+	unsigned char terraformer;
+	unsigned char terraformerPower;
+	unsigned char terraformerType;
+
+}MAPDATA;
+
+MAPDATA map[128][64];
 
 
 
@@ -61,17 +67,14 @@ void loadMap(const char* filename)
 	int mapX;
 	int mapY;
 	char megaobjectType;
-	//unsigned char byte1;
-	//unsigned char byte2;
-	//unsigned char testvar;
-	uint16_t mapData;
+	uint16_t mapBitplane;
 	ALLEGRO_FILE* mapFile;
 	mapFile = al_fopen(filename, "r");
 	if (mapFile == NULL) { printf("file not found!\n"); exit(1); }
 	al_fseek(mapFile, 0x80, ALLEGRO_SEEK_SET);
 
-	//mapData = al_fread16be(mapFile);
-	//testvar = (mapData & ~(0b0001111111111111)) >> 13;
+	//mapBitplane = al_fread16be(mapFile);
+	//testvar = (mapBitplane & ~(0b0001111111111111)) >> 13;
 	//printf("%x\n", testvar);
 
 	//byte1 = al_fgetc(mapFile);
@@ -80,43 +83,44 @@ void loadMap(const char* filename)
 	{
 		for (mapY = 0; mapY < 64; mapY++)
 		{
-			mapData = al_fread16be(mapFile);
+			mapBitplane = al_fread16be(mapFile);
 
-			biomemap[mapX][mapY] =		(mapData & ~(0b0001111111111111)) >> 13;
-			heightmap[mapX][mapY] =		(mapData & ~(0b1110000011111111)) >> 5; //0-255
-			watermap[mapX][mapY] =		(mapData & ~(0b1111111101111111)) >> 7; // 0 = Land ; 1= water
-			influencemap[mapX][mapY] =	(mapData & ~(0b1111111110111111)) >> 6;
+			map[mapX][mapY].biome =		(mapBitplane & ~(0b0001111111111111)) >> 13;
+			map[mapX][mapY].height =	(mapBitplane & ~(0b1110000011111111)) >> 5; //shifted to make it 0-255 
+			map[mapX][mapY].water =		(mapBitplane & ~(0b1111111101111111)) >> 7; // 0 = Land ; 1= water
+			map[mapX][mapY].influence = (mapBitplane & ~(0b1111111110111111)) >> 6; 
 
 
 
-			megaobjectType =		mapData & ~(0b1111111111000000);
+			megaobjectType =		mapBitplane & ~(0b1111111111000000);
 
-			if (megaobjectType == 0) //Nothing here
+			if (megaobjectType == 0)  //Nothing here
+	{
+		map[mapX][mapY].city = 0;
+		map[mapX][mapY].cityEra = 0;
+		map[mapX][mapY].cityPopulation = 0;
+		map[mapX][mapY].terraformer = 0;
+		map[mapX][mapY].terraformerPower = 0;
+		map[mapX][mapY].terraformerType = 0;
+	}
+
+			if (megaobjectType >= 1  && megaobjectType <= 31) //City
 			{
-				city[mapX][mapY] = 0;
-				cityEra[mapX][mapY] = 0;
-				cityPopulation[mapX][mapY] = 0;
-				terraformer[mapX][mapY] = 0;
-				terraformerPower[mapX][mapY] = 0;
-				terraformerType[mapX][mapY] = 0;
+				map[mapX][mapY].city = 1;
+				map[mapX][mapY].cityEra =			(mapBitplane & ~(0b1111111111110011)) >> 2;
+				map[mapX][mapY].cityPopulation =	mapBitplane & ~(0b1111111111111100); // 0 = Travelling
+				map[mapX][mapY].terraformer = 0;
+				map[mapX][mapY].terraformerPower = 0;
+				map[mapX][mapY].terraformerType = 0;
 			}
-			if (megaobjectType >= 1 && megaobjectType <= 31) //City
+			if (megaobjectType >= 32)  //Terriformer
 			{
-				city[mapX][mapY] = 1;
-				cityEra[mapX][mapY] =			(mapData & ~(0b1111111111110011)) >> 2;
-				cityPopulation[mapX][mapY] =	mapData & ~(0b1111111111111100); // 0 = Travelling
-				terraformer[mapX][mapY] = 0;
-				terraformerPower[mapX][mapY] = 0;
-				terraformerType[mapX][mapY] = 0;
-			}
-			else  //Terriformer
-			{
-				city[mapX][mapY] = 0;
-				cityEra[mapX][mapY] = 0;
-				cityPopulation[mapX][mapY] = 0;
-				terraformer[mapX][mapY] = 1;
-				terraformerPower[mapX][mapY] =	(mapData & ~(0b1111111111110011) >> 2); 
-				terraformerType[mapX][mapY] =	(mapData & ~(0b1111111111111100));
+				map[mapX][mapY].city = 0;
+				map[mapX][mapY].cityEra = 0;
+				map[mapX][mapY].cityPopulation = 0;
+				map[mapX][mapY].terraformer = 1;
+				map[mapX][mapY].terraformerPower =	(mapBitplane & ~(0b1111111111110011) >> 2);
+				map[mapX][mapY].terraformerType =	(mapBitplane & ~(0b1111111111111100));
 				//0 = Terriformer
 				//1 = Biome factory
 				//2 = Oxygenator
@@ -132,7 +136,7 @@ void loadMap(const char* filename)
 			
 	//		civmap[mapX][mapY] = byte2;
 			al_draw_filled_rectangle((mapX * 10), (mapY * 10), (mapX * 10) + 10, (mapY * 10) + 10, 
-				al_map_rgb(heightmap[mapX][mapY], heightmap[mapX][mapY], heightmap[mapX][mapY]), 0);
+				al_map_rgb(map[mapX][mapY].height, map[mapX][mapY].height, map[mapX][mapY].height), 0);
 			//al_draw_pixel(mapX*10, mapY*10, al_map_rgb(value, value, value));
 			//al_draw_filled_rectangle(mapX * 10, mapY * 10, mapX * 10 + 10, mapY * 10 + 10, al_map_rgb(value, value, value), 0);
 			al_flip_display();
