@@ -21,7 +21,7 @@ The basic layer is a rectangular array of 128 horizontal 64 tiles by vertical ti
 game’s layers are half this size: 64 horizontal by 32 vertical. These smaller layers have "fat"
 cells. One fat cell will correspond to four "tiny" cells from the basic layers. For example, an
 animal in cell (10,10) would look into the fat weather cell (5,5) when looking for air temperature.
-A tiny cell with coordinates (X,Y) would correspond 10 a fat cell at (X/2, Y/2). The fat cell with
+A tiny cell with coordinates (X,Y) would correspond to a fat cell at (X/2, Y/2). The fat cell with
 coordinates (H,V) would correspond to the four tiny cells at (H*2, V*2),(H*2+1, V*2),(H*2, V*2+1),
 and (H×2+1, V×2+1).
 
