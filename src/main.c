@@ -73,12 +73,7 @@ void loadMap(const char* filename)
 	if (mapFile == NULL) { printf("file not found!\n"); exit(1); }
 	al_fseek(mapFile, 0x80, ALLEGRO_SEEK_SET);
 
-	//mapBitplane = al_fread16be(mapFile);
-	//testvar = (mapBitplane & ~(0b0001111111111111)) >> 13;
-	//printf("%x\n", testvar);
 
-	//byte1 = al_fgetc(mapFile);
-	//byte2 = al_fgetc(mapFile);
 	for (mapX = 0; mapX < 128; mapX++)
 	{
 		for (mapY = 0; mapY < 64; mapY++)
@@ -132,13 +127,9 @@ void loadMap(const char* filename)
 			}
 
 
-
-			
-	//		civmap[mapX][mapY] = byte2;
 			al_draw_filled_rectangle((mapX * 10), (mapY * 10), (mapX * 10) + 10, (mapY * 10) + 10, 
 				al_map_rgb(map[mapX][mapY].height, map[mapX][mapY].height, map[mapX][mapY].height), 0);
-			//al_draw_pixel(mapX*10, mapY*10, al_map_rgb(value, value, value));
-			//al_draw_filled_rectangle(mapX * 10, mapY * 10, mapX * 10 + 10, mapY * 10 + 10, al_map_rgb(value, value, value), 0);
+
 			al_flip_display();
 		}
 	}
