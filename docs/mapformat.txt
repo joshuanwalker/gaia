@@ -290,7 +290,7 @@ tttt = event type
 
 
 //////////////////////////////////////////////////////////////////////////////
-0x8080 - Low-resolution (64x32) bitmap of ocean temperature (1 byte per cell)
+0x8080 - Low-resolution (64x32) bitmap of air temperature (1 byte per cell)
 
 Format:
 tttttttt
