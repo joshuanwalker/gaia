@@ -128,7 +128,7 @@ void loadMap(const char* filename)
 
 
 			al_draw_filled_rectangle((mapX * 10), (mapY * 10), (mapX * 10) + 10, (mapY * 10) + 10, 
-				al_map_rgb(map[mapX][mapY].height, map[mapX][mapY].height, map[mapX][mapY].height), 0);
+				al_map_rgb(map[mapX][mapY].height, map[mapX][mapY].height, map[mapX][mapY].height));
 
 			al_flip_display();
 		}
